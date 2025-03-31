@@ -61,59 +61,29 @@ def GenerateX0Samples():
 ###############################################################################
 # 3) 初始猜测生成
 ###############################################################################
-def GenerateRandomInitialGuess(min_random=-1000.0, max_random=1000.0):
+def GenerateRandomInitialGuess(min_random=-6000.0, max_random=6000.0):
     """
     生成一个随机的 (u_ini_guess, x_ini_guess)
     其中 u_ini_guess 在 [min_random, max_random] 里均匀随机取,范围我不清楚，问！
     """
     u_ini_guess = np.random.uniform(min_random, max_random, 1)[0]
     if u_ini_guess >= 0:
-        x_ini_guess =  5
+        x_ini_guess =  np.full(5, 5)
     else:
-        x_ini_guess = -5
-
+        x_ini_guess = np.full(5, -5)
     return u_ini_guess, x_ini_guess
 
-def generate_initial_guess(x_guess, u_guess):
-    """
-    """
-    # Initialize state
-    x_ini_guess = np.zeros(5)  # [x, xdot, theta, thetadot, thetastar]
-
-    # Set x and theta based on the guesses
-    x_ini_guess[0] = x_guess  # position
-    x_ini_guess[2] = x_guess  # theta from u_guess
-
-    # Set xdot (velocity) and thetadot (angular velocity) to 0
-    x_ini_guess[1] = x_guess  # xdot
-    x_ini_guess[3] = x_guess  # thetadot
-
-    # Calculate thetastar based on the given formula
-    x_ini_guess[4] = x_guess  # thetastar
-
-    return x_ini_guess
-
-# def generate_initial_guess(x_guess, u_guess):
+# def GenerateRandomInitialGuess(min_random=-6000.0, max_random=6000.0):
 #     """
-#     Generate the initial state guess for the system.
-#     Args:
-#         x_guess: Initial guess for position (x).
-#         u_guess: Initial guess for force (F), which is used for theta.
-#     Returns:
-#         x_ini_guess: The initial state vector [x, xdot, theta, thetadot, thetastar]
+#     生成一个随机的 (u_ini_guess, x_ini_guess)
+#     其中 u_ini_guess 在 [min_random, max_random] 里均匀随机取,范围我不清楚，问！
 #     """
-#     # Initialize state
-#     x_ini_guess = np.zeros(5)  # [x, xdot, theta, thetadot, thetastar]
-
-#     # Set x and theta based on the guesses
-#     x_ini_guess[0] = x_guess  # position
-#     x_ini_guess[2] = u_guess  # theta from u_guess
-
-#     # Set xdot (velocity) and thetadot (angular velocity) to 0
-#     x_ini_guess[1] = 0  # xdot
-#     x_ini_guess[3] = 0  # thetadot
-
-#     # Calculate thetastar based on the given formula
-#     x_ini_guess[4] = - (1 / np.pi) * (x_ini_guess[2] - np.pi) ** 2 + np.pi  # thetastar
-
-#     return x_ini_guess
+#     u_ini_guess = np.random.uniform(min_random, max_random, 1)[0]
+#     if u_ini_guess >= 0:
+#         x_ini_guess =  np.zeros(5)
+#         x_ini_guess[0] = 10
+#     else:
+#         x_ini_guess = np.zeros(5)
+#         x_ini_guess[0] = -10
+#         x_ini_guess[0] = 2*np.pi
+#     return u_ini_guess, x_ini_guess

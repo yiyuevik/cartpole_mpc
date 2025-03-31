@@ -6,12 +6,30 @@ cartpole_ocp.py
 
 import numpy as np
 import casadi as ca
-from acados_template import AcadosOcp, AcadosOcpSolver, AcadosSim, AcadosSimSolver
+from acados_template import AcadosOcp, AcadosOcpSolver, AcadosSimSolver
 import config  # 引用 config.py
 import scipy.linalg
 
 # 导入 CartPole 模型
 from cartpole_model import export_cartpole_ode_model
+
+def clear_solver_state(ocp_solver, N_horizon):
+    # 清空状态和控制输入
+    for i in range(N_horizon):
+        ocp_solver.set(i, "x", np.zeros_like(ocp_solver.get(i,"x")))
+        ocp_solver.set(i, "u", np.zeros_like(ocp_solver.get(i,"u")))
+    ocp_solver.set(N_horizon, "x", np.zeros_like(ocp_solver.get(N_horizon,"x")))
+
+def get_guess_from_solver_result(ocp_solver, N_horizon):
+    u_guess = np.zeros(N_horizon)
+    x_guess = np.zeros((5,N_horizon+1))
+    for i in range(N_horizon-1):
+        u_guess[i] = ocp_solver.get(i+1, "u")
+        x_guess[:,i] = ocp_solver.get(i+1, "x")
+    u_guess[N_horizon-1] = ocp_solver.get(N_horizon-1, "u")
+    x_guess[:,N_horizon-1] = ocp_solver.get(N_horizon, "x")
+    x_guess[:,N_horizon] = ocp_solver.get(N_horizon, "x")
+    return u_guess, x_guess
 
 def create_ocp_solver(x0):
     ocp = AcadosOcp()
@@ -58,7 +76,7 @@ def create_ocp_solver(x0):
     ocp.solver_options.hessian_approx = 'GAUSS_NEWTON'
     ocp.solver_options.integrator_type = 'IRK'
     ocp.solver_options.nlp_solver_type = 'SQP'
-    ocp.solver_options.nlp_solver_max_iter = 2000
+    ocp.solver_options.nlp_solver_max_iter = 200
     ocp.solver_options.globalization = 'MERIT_BACKTRACKING'
     ocp.solver_options.print_level = 0
 
@@ -70,8 +88,9 @@ def create_ocp_solver(x0):
     return ocp, acados_solver, acados_integrator
 
 def simulate_closed_loop(x0, N_sim=50):
+    
     ocp, ocp_solver, integrator = create_ocp_solver(x0)
-   
+    
     nx = ocp.model.x.size()[0]  # Should be 5
     nu = ocp.model.u.size()[0]  # Should be 1
 
@@ -81,20 +100,31 @@ def simulate_closed_loop(x0, N_sim=50):
     simX[0, :] = x0  # 初始化状态为传入的 x0
 
     # 闭环仿真
-    for i in range(N_sim):
-        u_guess, x_guess = config.GenerateRandomInitialGuess()
-        x_ini_guess = config.generate_initial_guess(x_guess, u_guess)
-        # 更新求解器的初始猜测
-        ocp_solver.set(0, "u", u_guess)  # 设置控制输入初始猜测
-        ocp_solver.set(0, "x", x_ini_guess)  # 设置状态初始猜测
+    u_guess, x_guess = config.GenerateRandomInitialGuess()
+    # 初次initial guess设置
+    for j in range(config.Horizon):
+                ocp_solver.set(j, "u", u_guess)
+                ocp_solver.set(j, "x", x_guess)
+    ocp_solver.set(config.Horizon,"x",x_guess)
+    print("X_guess",x_guess)
 
+    for i in range(N_sim):
         u_opt = ocp_solver.solve_for_x0(x0_bar = simX[i, :])
 
-        simU[i,:] = u_opt
+        #设置下一个sim的初始猜测
+        u_guess, x_guess = get_guess_from_solver_result(ocp_solver, config.Horizon)
+        clear_solver_state(ocp_solver, config.Horizon) #按道理不太需要
+        for j in range(config.Horizon):
+            ocp_solver.set(j, "u", u_guess[j])
+            ocp_solver.set(j, "x", x_guess[:, j])
+        ocp_solver.set(config.Horizon,"x",x_guess[:,-1])
 
+        simU[i,:] = u_opt
         # 更新状态
         x_next = integrator.simulate(x=simX[i,:], u=u_opt)
         simX[i+1,:] = x_next
 
+    
+    
     t = np.linspace(0, N_sim*config.Ts, N_sim+1)
     return t, simX, simU

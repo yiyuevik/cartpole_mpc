@@ -51,6 +51,12 @@ def export_cartpole_ode_model():
         + F
     ) / (M_TOTAL - M_POLE*ca.cos(theta))**2
 
+    # xdot_vel = (
+    #     MPLP * (-ca.sin(theta)) * (theta_vel**2)
+    #     + MPG  * ca.sin(theta)*ca.cos(theta)
+    #     + F
+    # ) / (M_TOTAL - M_POLE*ca.cos(theta)**2)
+
     #  xdot(2) = theta_vel
     xdot_theta = theta_vel
 
@@ -60,6 +66,12 @@ def export_cartpole_ode_model():
        - MTG * ca.sin(theta)
        - ca.cos(theta)*F
     ) / (MTLP - MPLP*(ca.cos(theta)**2))
+
+    # xdot_theta_vel = (
+    #    -MPLP * ca.sin(theta)*ca.cos(theta)*(theta_vel**2)
+    #    + MTG * ca.sin(theta)
+    #    + ca.cos(theta)*F
+    # ) / (MTLP - MPLP*(ca.cos(theta)**2))
 
     #  xdot(4) = - (2/pi)*(theta - pi)*theta_vel
     xdot_theta_stat = - PI_UNDER_2 * (theta - np.pi) * theta_vel
