@@ -69,7 +69,10 @@ def create_ocp_solver(x0):
     ocp.constraints.x0 = x0
     ocp.constraints.lbu = np.array([-config.Fmax])
     ocp.constraints.ubu = np.array([+config.Fmax])
+    ocp.constraints.ubx = np.array([20])
+    ocp.constraints.lbx = np.array([-20])
     ocp.constraints.idxbu = np.array([0])  # 控制量u只有1维
+    ocp.constraints.idxbx = np.array([0])
 
     # 求解器设置
     ocp.solver_options.qp_solver = 'PARTIAL_CONDENSING_HPIPM'
@@ -87,9 +90,8 @@ def create_ocp_solver(x0):
 
     return ocp, acados_solver, acados_integrator
 
-def simulate_closed_loop(x0, N_sim=50):
-    
-    ocp, ocp_solver, integrator = create_ocp_solver(x0)
+
+def simulate_closed_loop(ocp, ocp_solver, integrator, x0, N_sim=50):
     
     nx = ocp.model.x.size()[0]  # Should be 5
     nu = ocp.model.u.size()[0]  # Should be 1
@@ -106,11 +108,10 @@ def simulate_closed_loop(x0, N_sim=50):
                 ocp_solver.set(j, "u", u_guess)
                 ocp_solver.set(j, "x", x_guess)
     ocp_solver.set(config.Horizon,"x",x_guess)
-    print("X_guess",x_guess)
+    print("X_guess", x_guess)
 
     for i in range(N_sim):
         u_opt = ocp_solver.solve_for_x0(x0_bar = simX[i, :])
-
         #设置下一个sim的初始猜测
         u_guess, x_guess = get_guess_from_solver_result(ocp_solver, config.Horizon)
         clear_solver_state(ocp_solver, config.Horizon) #按道理不太需要

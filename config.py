@@ -14,7 +14,7 @@ Horizon = 64          # 预测步数
 Ts = 0.01             # 采样时间
 Num_State = 5         # 状态维数(如 cartpole + 虚拟态) 
 Num_Input = 1         # 控制量维数
-Fmax = 6000
+Fmax = 100
 
 # Q 矩阵
 Q = np.diag([0.01,    # x 
@@ -61,18 +61,6 @@ def GenerateX0Samples():
 ###############################################################################
 # 3) 初始猜测生成
 ###############################################################################
-def GenerateRandomInitialGuess(min_random=-6000.0, max_random=6000.0):
-    """
-    生成一个随机的 (u_ini_guess, x_ini_guess)
-    其中 u_ini_guess 在 [min_random, max_random] 里均匀随机取,范围我不清楚，问！
-    """
-    u_ini_guess = np.random.uniform(min_random, max_random, 1)[0]
-    if u_ini_guess >= 0:
-        x_ini_guess =  np.full(5, 5)
-    else:
-        x_ini_guess = np.full(5, -5)
-    return u_ini_guess, x_ini_guess
-
 # def GenerateRandomInitialGuess(min_random=-6000.0, max_random=6000.0):
 #     """
 #     生成一个随机的 (u_ini_guess, x_ini_guess)
@@ -80,10 +68,24 @@ def GenerateRandomInitialGuess(min_random=-6000.0, max_random=6000.0):
 #     """
 #     u_ini_guess = np.random.uniform(min_random, max_random, 1)[0]
 #     if u_ini_guess >= 0:
-#         x_ini_guess =  np.zeros(5)
-#         x_ini_guess[0] = 10
+#         x_ini_guess =  np.full(5, 5)
 #     else:
-#         x_ini_guess = np.zeros(5)
-#         x_ini_guess[0] = -10
-#         x_ini_guess[0] = 2*np.pi
+#         x_ini_guess = np.full(5, -5)
 #     return u_ini_guess, x_ini_guess
+
+def GenerateRandomInitialGuess(min_random=-6000.0, max_random=6000.0):
+    """
+    生成一个随机的 (u_ini_guess, x_ini_guess)
+    其中 u_ini_guess 在 [min_random, max_random] 里均匀随机取,范围我不清楚，问！
+    """
+    u_ini_guess = np.random.uniform(min_random, max_random, 1)[0]
+    if u_ini_guess >= 0:
+        x_ini_guess =  np.zeros(5)
+        # x_ini_guess[0] = 5
+    else:
+        x_ini_guess = np.zeros(5)
+        # x_ini_guess[0] = -5
+        x_ini_guess[2] = 2*np.pi
+    return u_ini_guess, x_ini_guess
+
+

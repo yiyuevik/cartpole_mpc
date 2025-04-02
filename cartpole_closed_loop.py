@@ -24,26 +24,31 @@ def main():
     for i in range(7, 150, 15):
         x0_theta.append(X0_samples[i])
     # 4) 闭环仿真
-    N_sim = 50  # 修改为50次模拟
-    all_simX = np.zeros((51,5,10))
-    all_simU = np.zeros((50,1,10))
+    N_sim = 80  # 模拟步数
+    all_simX = np.zeros((N_sim+1,5,10))
+    all_simU = np.zeros((N_sim,1,10))
+    all_time = np.zeros((10))
     i = 0
+    ocp, ocp_solver, integrator = create_ocp_solver(x0_theta[0])
     for initial_state in x0_theta:
         starttime = time.time()
-        t, simX, simU = simulate_closed_loop(initial_state, N_sim=N_sim)
+        t, simX, simU = simulate_closed_loop(ocp, ocp_solver, integrator, initial_state, N_sim=N_sim)
         endtime = time.time()
+        elapsed_time = endtime - starttime
         all_simX[:,:,i] = simX
         all_simU[:,:,i] = simU
+        all_time[i] = elapsed_time
+        print("elapsed_time: ",elapsed_time)
         i = i+1
-        elapsed_time = endtime - starttime
         print(f"Simulation for initial state {initial_state} took {elapsed_time:.4f} seconds.")
 
-
-        # 5) 动画
+        # 5) 绘制曲线
+        # plot_cartpole_trajectories(t, simX, simU)
+        # 6) 动画
         # animate_cartpole(t, simX, L=1.0, interval=50)
 
-        # 6) 绘制曲线
-        # plot_cartpole_trajectories(t, simX, simU)
+    print("all_time: ", np.sum(all_time))
+    print("time/turn: ", np.sum(all_time)/800)
 
     theta_values = all_simX[:, 2, :]  # shape: (51, 10)，提取所有步骤的theta，10个样本
 

@@ -25,8 +25,8 @@ def export_cartpole_ode_model():
     MPG  = M_POLE * G          # m*g
     M_TOTAL = M_CART + M_POLE
     MTG = M_TOTAL * G
-    MTLP = M_TOTAL * G
-    # MTLP = M_TOTAL * L_POLE
+    # MTLP = M_TOTAL * G
+    MTLP = M_TOTAL * L_POLE
     PI_UNDER_2 = 2.0 / np.pi
 
     # CasADi 符号
@@ -45,33 +45,33 @@ def export_cartpole_ode_model():
     #  xdot(0) = x_vel
     xdot_pos = x_vel
     #  xdot(1) = ...
-    xdot_vel = (
-        MPLP * (-ca.sin(theta)) * (theta_vel**2)
-        + MPG  * ca.sin(theta)*ca.cos(theta)
-        + F
-    ) / (M_TOTAL - M_POLE*ca.cos(theta))**2
-
     # xdot_vel = (
     #     MPLP * (-ca.sin(theta)) * (theta_vel**2)
     #     + MPG  * ca.sin(theta)*ca.cos(theta)
     #     + F
-    # ) / (M_TOTAL - M_POLE*ca.cos(theta)**2)
+    # ) / (M_TOTAL - M_POLE*ca.cos(theta))**2
+
+    xdot_vel = (
+        MPLP * (-ca.sin(theta)) * (theta_vel**2)
+        + MPG  * ca.sin(theta)*ca.cos(theta)
+        + F
+    ) / (M_TOTAL - M_POLE*ca.cos(theta)**2)
 
     #  xdot(2) = theta_vel
     xdot_theta = theta_vel
 
     #  xdot(3) = ...
-    xdot_theta_vel = (
-       -MPLP * ca.sin(theta)*ca.cos(theta)*(theta_vel**2)
-       - MTG * ca.sin(theta)
-       - ca.cos(theta)*F
-    ) / (MTLP - MPLP*(ca.cos(theta)**2))
-
     # xdot_theta_vel = (
     #    -MPLP * ca.sin(theta)*ca.cos(theta)*(theta_vel**2)
-    #    + MTG * ca.sin(theta)
-    #    + ca.cos(theta)*F
+    #    - MTG * ca.sin(theta)
+    #    - ca.cos(theta)*F
     # ) / (MTLP - MPLP*(ca.cos(theta)**2))
+
+    xdot_theta_vel = (
+       -MPLP * ca.sin(theta)*ca.cos(theta)*(theta_vel**2)
+       + MTG * ca.sin(theta)
+       + ca.cos(theta)*F
+    ) / (MTLP - MPLP*(ca.cos(theta)**2))
 
     #  xdot(4) = - (2/pi)*(theta - pi)*theta_vel
     xdot_theta_stat = - PI_UNDER_2 * (theta - np.pi) * theta_vel
