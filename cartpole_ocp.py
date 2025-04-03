@@ -79,8 +79,8 @@ def create_ocp_solver(x0):
     ocp.solver_options.hessian_approx = 'GAUSS_NEWTON'
     ocp.solver_options.integrator_type = 'IRK'
     ocp.solver_options.nlp_solver_type = 'SQP'
-    ocp.solver_options.nlp_solver_max_iter = 200
-    ocp.solver_options.globalization = 'MERIT_BACKTRACKING'
+    ocp.solver_options.nlp_solver_max_iter = 400
+    # ocp.solver_options.globalization = 'MERIT_BACKTRACKING'
     ocp.solver_options.print_level = 0
 
     # 构造 OCP 求解器
@@ -104,15 +104,15 @@ def simulate_closed_loop(ocp, ocp_solver, integrator, x0, N_sim=50):
     # 闭环仿真
     u_guess, x_guess = config.GenerateRandomInitialGuess()
     # 初次initial guess设置
-    for j in range(config.Horizon):
+    for j in range(0,config.Horizon, 10):
                 ocp_solver.set(j, "u", u_guess)
                 ocp_solver.set(j, "x", x_guess)
-    ocp_solver.set(config.Horizon,"x",x_guess)
+    # ocp_solver.set(config.Horizon,"x",x_guess)
     print("X_guess", x_guess)
-
     for i in range(N_sim):
         u_opt = ocp_solver.solve_for_x0(x0_bar = simX[i, :])
         #设置下一个sim的初始猜测
+        # print(i)
         u_guess, x_guess = get_guess_from_solver_result(ocp_solver, config.Horizon)
         clear_solver_state(ocp_solver, config.Horizon) #按道理不太需要
         for j in range(config.Horizon):

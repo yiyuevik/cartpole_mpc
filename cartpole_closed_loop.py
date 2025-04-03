@@ -61,10 +61,10 @@ def main():
     plt.figure(figsize=(12, 6))
 
     # 填充最大值和最小值之间的区域，表示范围
-    plt.fill_between(range(51), theta_min, theta_max, color='lightblue', label='Range', alpha=0.5)
+    plt.fill_between(range(N_sim+1), theta_min, theta_max, color='lightblue', label='Range', alpha=0.5)
 
     # 绘制中位数线
-    plt.plot(range(51), theta_median, color='blue', label='Median', linewidth=2)
+    plt.plot(range(N_sim+1), theta_median, color='blue', label='Median', linewidth=2)
 
     # 设置图形标题和标签
     plt.title('Theta (State 3) Range and Median Over Time')
